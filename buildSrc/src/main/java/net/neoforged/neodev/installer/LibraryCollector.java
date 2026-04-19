@@ -56,12 +56,14 @@ class LibraryCollector {
     private static final List<String> HOST_WHITELIST = List.of(
             "minecraft.net",
             "neoforged.net",
-            "mojang.com"
+            "mojang.com",
+            "spigotmc.org"
     );
 
     private static final URI MOJANG_MAVEN = URI.create("https://libraries.minecraft.net");
     private static final URI NEOFORGED_MAVEN = URI.create("https://maven.neoforged.net/releases");
     private static final URI MOHISTMC_MAVEN = URI.create("https://maven.mohistmc.com");
+    private static final URI SPIGOTMC_MAVEN = URI.create("https://hub.spigotmc.org/nexus/content/groups/public");
 
     private final List<URI> repositoryUrls;
 
@@ -88,6 +90,8 @@ class LibraryCollector {
         repositoryUrls.removeIf(it -> it.getHost().equals(MOJANG_MAVEN.getHost()));
         repositoryUrls.removeIf(it -> it.getHost().equals(NEOFORGED_MAVEN.getHost()) && it.getPath().startsWith(NEOFORGED_MAVEN.getPath()));
         repositoryUrls.removeIf(it -> it.getHost().equals(MOHISTMC_MAVEN.getHost()) && it.getPath().startsWith(MOHISTMC_MAVEN.getPath()));
+        repositoryUrls.removeIf(it -> it.getHost().equals(SPIGOTMC_MAVEN.getHost()) && it.getPath().startsWith(SPIGOTMC_MAVEN.getPath()));
+        repositoryUrls.addFirst(SPIGOTMC_MAVEN);
         repositoryUrls.addFirst(NEOFORGED_MAVEN);
         repositoryUrls.addFirst(MOJANG_MAVEN);
         repositoryUrls.addFirst(MOHISTMC_MAVEN);

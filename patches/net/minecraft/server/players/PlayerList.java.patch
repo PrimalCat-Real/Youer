@@ -733,9 +733,6 @@
          serverplayer.setHealth(serverplayer.getHealth());
 +        net.neoforged.neoforge.attachment.AttachmentSync.syncInitialPlayerAttachments(serverplayer);
 +        net.neoforged.neoforge.event.EventHooks.firePlayerRespawnEvent(serverplayer, p_11238_);
-+        // Paper start - Add PlayerPostRespawnEvent
-+        boolean isBedSpawn = false;
-+        // Paper end - Add PlayerPostRespawnEvent
          if (!p_11238_) {
              BlockPos blockpos = BlockPos.containing(dimensiontransition.pos());
              BlockState blockstate = serverlevel.getBlockState(blockpos);
@@ -769,11 +766,6 @@
 +                                )
 +                        );
 +            }
-+            // Paper start - Add PlayerPostRespawnEvent
-+            if (blockstate.is(net.minecraft.tags.BlockTags.BEDS) && !dimensiontransition.missingRespawnBlock()) {
-+                isBedSpawn = true;
-+            }
-+            // Paper end - Add PlayerPostRespawnEvent
 +        }
 +        // Added from changeDimension
 +        this.sendAllPlayerInfo(serverplayer); // Update health, etc...
@@ -795,12 +787,9 @@
 +        if (serverplayer.connection.isDisconnected()) {
 +            this.save(serverplayer);
 +        }
-+        cserver.getPluginManager().callEvent(new com.destroystokyo.paper.event.player.PlayerPostRespawnEvent(serverplayer.getBukkitEntity(),
-+                CraftLocation.toBukkit(dimensiontransition.pos(), dimensiontransition.newLevel().getWorld(), dimensiontransition.yRot(), dimensiontransition.xRot()),
-+                isBedSpawn));
          return serverplayer;
      }
- 
+
 +    public ServerPlayer respawn(ServerPlayer entityplayer, boolean flag, Entity.RemovalReason entity_removalreason, PlayerRespawnEvent.RespawnReason reason) {
 +        return this.respawn(entityplayer, flag, entity_removalreason, reason, null);
 +    }
@@ -824,22 +813,15 @@
 +        for (String s : entityplayer.getTags()) {
 +            entityplayer1.addTag(s);
 +        }
-+        // Paper start - Add PlayerPostRespawnEvent
-+        boolean isBedSpawn = false;
-+        boolean isRespawn = false;
-+        // Paper end - Add PlayerPostRespawnEvent
-+
 +        // CraftBukkit start - fire PlayerRespawnEvent
 +        DimensionTransition dimensiontransition;
++        boolean isRespawn = false;
 +        if (location == null) {
 +            dimensiontransition = entityplayer.findRespawnPositionAndUseSpawnBlock(flag, DimensionTransition.DO_NOTHING, reason);
 +
 +            if (!flag) entityplayer.reset(); // SPIGOT-4785
-+            // Paper start - Add PlayerPostRespawnEvent
 +            if (dimensiontransition == null) return entityplayer; // Early exit, mirrors belows early return for disconnected players in respawn event
 +            isRespawn = true;
-+            location = CraftLocation.toBukkit(dimensiontransition.pos(), dimensiontransition.newLevel().getWorld(), dimensiontransition.yRot(), dimensiontransition.xRot());
-+            // Paper end - Add PlayerPostRespawnEvent
 +        } else {
 +            dimensiontransition = new DimensionTransition(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toVec3D(location), Vec3.ZERO, location.getYaw(), location.getPitch(), DimensionTransition.DO_NOTHING);
 +        }
@@ -898,11 +880,6 @@
 +            if (iblockdata.is(Blocks.RESPAWN_ANCHOR)) {
 +                entityplayer1.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), 1.0F, 1.0F, worldserver.getRandom().nextLong()));
 +            }
-+            // Paper start - Add PlayerPostRespawnEvent
-+            if (iblockdata.is(net.minecraft.tags.BlockTags.BEDS) && !dimensiontransition.missingRespawnBlock()) {
-+                isBedSpawn = true;
-+            }
-+            // Paper end - Add PlayerPostRespawnEvent
 +        }
 +        // Added from changeDimension
 +        this.sendAllPlayerInfo(entityplayer); // Update health, etc...
@@ -926,12 +903,9 @@
 +            this.save(entityplayer);
 +        }
 +
-+        // Paper start - Add PlayerPostRespawnEvent
 +        if (isRespawn) {
 +            net.neoforged.neoforge.event.EventHooks.firePlayerRespawnEvent(entityplayer1, flag);
-+            cserver.getPluginManager().callEvent(new com.destroystokyo.paper.event.player.PlayerPostRespawnEvent(entityplayer.getBukkitEntity(), location, isBedSpawn));
 +        }
-+        // Paper end - Add PlayerPostRespawnEvent
 +
 +        // CraftBukkit end
 +
