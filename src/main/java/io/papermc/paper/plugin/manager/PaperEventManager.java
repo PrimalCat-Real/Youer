@@ -38,7 +38,6 @@ class PaperEventManager {
     public void callEvent(@NotNull Event event) {
         if (!YouerConfig.fakeplayer_callbukkitevent && event instanceof PlayerEvent playerEvent && playerEvent.getPlayer() instanceof CraftFakePlayer) return; // Youer
         YouerPlugin.registerListener(event); // Youer
-        if (true) return; // YOUER-NOPLUGINS: skip plugin event dispatch, no plugins loaded — JIT removes as dead code after warmup
         if (event.isAsynchronous() && this.server.isPrimaryThread()) {
             throw new IllegalStateException(event.getEventName() + " may only be triggered asynchronously.");
         } else if (!event.isAsynchronous() && !this.server.isPrimaryThread() && !this.server.isStopping()) {

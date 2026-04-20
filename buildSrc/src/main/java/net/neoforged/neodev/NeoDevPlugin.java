@@ -137,11 +137,13 @@ public class NeoDevPlugin implements Plugin<Project> {
 
         // 5. Unpack jar from 4.
         var mcSourcesPath = project.file("src/main/java");
-        tasks.register("setup", Sync.class, task -> {
+        var setupTask = tasks.register("setup", Sync.class, task -> {
             task.setGroup(GROUP);
             task.from(project.zipTree(applyPatches.flatMap(ApplyPatches::getPatchedJar)));
             task.into(mcSourcesPath);
         });
+
+        tasks.named("compileJava", task -> task.dependsOn(setupTask));
 
         /*
          * RUNS SETUP
@@ -218,6 +220,7 @@ public class NeoDevPlugin implements Plugin<Project> {
             task.getOriginalJar().set(applyAt.flatMap(TransformSources::getOutputJar));
             task.getModifiedSources().set(project.file("src/main/java"));
             task.getPatchesFolder().set(neoDevBuildDir.map(dir -> dir.dir("production-source-patches")));
+            task.dependsOn(tasks.named("setup"));
         });
 
         // Update the patch/ folder with the current patches.
